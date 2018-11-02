@@ -6,6 +6,10 @@ use Illuminate\Http\Request;
 
 use App\Event;
 
+use App\Category;
+
+use Illuminate\Support\Facades\DB;
+
 class EventsController extends Controller
 {
     /**
@@ -18,6 +22,12 @@ class EventsController extends Controller
         $events = Event::all();
 
         foreach ($events as $event) {
+          $category_ids = DB::table('category_event')->where('event_id', $event->id)->pluck('category_id');
+          $category_names = [];
+          foreach ($category_ids as $id) {
+            $category_names[] = DB::table('categories')->where('id', $id)->value('name');
+          }
+          $event->categories = $category_names;
           $event->view_event = [
             'href' => 'api/v1/events' . $event->id,
             'method' => 'GET'
@@ -53,6 +63,7 @@ class EventsController extends Controller
         ]);
 
         $title = $request->input('title');
+        $categories = $request->input('categories');
         $description = $request->input('description');
         $quota = $request->input('quota');
         $city = $request->input('city');
@@ -75,6 +86,13 @@ class EventsController extends Controller
         ]);
 
         if ($event->save()) {
+          if ($categories) {
+            foreach ($categories as $name) {
+              $category_id = DB::table('categories')->where('name', $name)->value('id');
+              $event->categories()->attach($category_id);
+            }
+          }
+          $event->categories = $categories;
           $event->view_event = [
             'href' => 'api/v1/events/' . $event->id,
             'method' => 'GET'
@@ -101,6 +119,12 @@ class EventsController extends Controller
     public function show($id)
     {
         $event = Event::with('users')->where('id', $id)->firstOrFail();
+        $category_ids = DB::table('category_event')->where('event_id', $event->id)->pluck('category_id');
+        $category_names = [];
+        foreach ($category_ids as $id) {
+          $category_names[] = DB::table('categories')->where('id', $id)->value('name');
+        }
+        $event->categories = $category_names;
         $event->view_events = [
           'href' => 'api/v1/events',
           'method' => 'GET'
@@ -135,6 +159,7 @@ class EventsController extends Controller
       ]);
 
       $title = $request->input('title');
+      $categories = $request->input('categories');
       $description = $request->input('description');
       $quota = $request->input('quota');
       $city = $request->input('city');
@@ -175,6 +200,15 @@ class EventsController extends Controller
         ], 404);
       }
 
+      // Menambahkan category_id dan event_id ke tabel category_event
+      if ($categories) {
+        foreach ($categories as $name) {
+          $category_id = DB::table('categories')->where('name', $name)->value('id');
+          $event->categories()->attach($category_id);
+        }
+      }
+      $event->categories = $categories;
+
       $event->view_event = [
         'href' => 'api/v1/events/' . $event->id,
         'method' => 'GET'
@@ -204,6 +238,7 @@ class EventsController extends Controller
 
       $event = Event::findOrFail($id);
       $users = $event->users;
+      $categories = $event->categories;
 
       // Jika user bukan pembuat event
       if ($event->organizer_id != $organizer_id) {
@@ -214,6 +249,10 @@ class EventsController extends Controller
 
       // Menghapus data tickets
       $event->users()->detach();
+
+      // Menghapus data category_event
+      $event->categories()->detach();
+
 
       if (!$event->delete()) {
         foreach ($users as $user) {
