@@ -30,4 +30,8 @@ class User extends Authenticatable
     public function events() {
       return $this->belongsToMany(Event::class, 'tickets');
     }
+
+    public function wishlist() {
+      return $this->belongsToMany(Event::class, 'wishlist');
+    }
 }

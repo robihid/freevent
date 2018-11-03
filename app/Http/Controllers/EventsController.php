@@ -3,15 +3,20 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use JWTAuth;
+use JWTException;
 
 use App\Event;
-
 use App\Category;
 
 use Illuminate\Support\Facades\DB;
 
 class EventsController extends Controller
 {
+    public function __construct() {
+      $this->middleware('jwt.auth', ['except' => ['index', 'show']]);
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -35,7 +40,7 @@ class EventsController extends Controller
         }
 
         $response = [
-          'msg' => 'List of all events',
+          'msg' => 'Semua event yang ada',
           'events' => $events
         ];
 
@@ -50,6 +55,8 @@ class EventsController extends Controller
      */
     public function store(Request $request)
     {
+        $user = JWTAuth::toUser($request->header('token'));
+
         $this->validate($request, [
           'title' => 'required',
           'description' => 'required',
@@ -59,7 +66,6 @@ class EventsController extends Controller
           'start_time' => 'required',
           'end_time' => 'required',
           'image_url' => 'required',
-          'organizer_id' => 'required'
         ]);
 
         $title = $request->input('title');
@@ -71,7 +77,7 @@ class EventsController extends Controller
         $start_time = $request->input('start_time');
         $end_time = $request->input('end_time');
         $image_url = $request->input('image_url');
-        $organizer_id = $request->input('organizer_id');
+        $organizer_id = $user->id;
 
         $event = new Event([
           'title' => $title,
@@ -98,14 +104,14 @@ class EventsController extends Controller
             'method' => 'GET'
           ];
           $response = [
-            'msg' => 'Event created',
+            'msg' => 'Event berhasil dibuat',
             'event' => $event
           ];
           return response()->json($response, 201);
         }
 
         $response = [
-          'msg' => 'Error during creation'
+          'msg' => 'Terjadi error saat pembuatan event'
         ];
         return response()->json($response, 404);
     }
@@ -131,7 +137,7 @@ class EventsController extends Controller
         ];
 
         $response = [
-          'msg' => 'Event information',
+          'msg' => 'Detail informasi event',
           'event' => $event
         ];
         return response()->json($response, 200);
@@ -146,6 +152,8 @@ class EventsController extends Controller
      */
     public function update(Request $request, $id)
     {
+      $user = JWTAuth::toUser($request->header('token'));
+
       $this->validate($request, [
         'title' => 'required',
         'description' => 'required',
@@ -155,7 +163,6 @@ class EventsController extends Controller
         'start_time' => 'required',
         'end_time' => 'required',
         'image_url' => 'required',
-        'organizer_id' => 'required'
       ]);
 
       $title = $request->input('title');
@@ -167,19 +174,19 @@ class EventsController extends Controller
       $start_time = $request->input('start_time');
       $end_time = $request->input('end_time');
       $image_url = $request->input('image_url');
-      $organizer_id = $request->input('organizer_id');
+      $organizer_id = $user->id;
 
       // Jika event tidak ditemukan
       if (!$event = Event::find($id)) {
         return response()->json([
-          'msg' => 'Event not found'
+          'msg' => 'Event tidak ditemukan'
         ], 404);
       }
 
       // Jika user bukan pembuat event
       if ($event->organizer_id != $organizer_id) {
         return response()->json([
-            'msg' => 'Access denied'
+            'msg' => 'Anda tidak diizinkan mengubah event ini'
           ], 401);
       }
 
@@ -196,11 +203,12 @@ class EventsController extends Controller
       // Jika terjadi kesalahan saat update
       if (!$event->update()) {
         return response()->json([
-          'msg' => 'Error during update'
+          'msg' => 'Terjadi error saat melakukan perubahan'
         ], 404);
       }
 
       // Menambahkan category_id dan event_id ke tabel category_event
+      $event->categories()->detach();
       if ($categories) {
         foreach ($categories as $name) {
           $category_id = DB::table('categories')->where('name', $name)->value('id');
@@ -215,7 +223,7 @@ class EventsController extends Controller
       ];
 
       $response = [
-        'msg' => 'Event updated',
+        'msg' => 'Event berhasil diubah',
         'event' => $event
       ];
 
@@ -230,11 +238,9 @@ class EventsController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-      $this->validate($request, [
-        'organizer_id' => 'required'
-      ]);
+      $user = JWTAuth::toUser($request->header('token'));
 
-      $organizer_id = $request->input('organizer_id');
+      $organizer_id = $user->id;
 
       $event = Event::findOrFail($id);
       $users = $event->users;
@@ -243,15 +249,18 @@ class EventsController extends Controller
       // Jika user bukan pembuat event
       if ($event->organizer_id != $organizer_id) {
         return response()->json([
-            'msg' => 'Access denied'
+            'msg' => 'Anda tidak diizinkan menghapus event ini'
           ], 401);
       }
+
+      // Menghapus data category_event
+      $event->categories()->detach();
 
       // Menghapus data tickets
       $event->users()->detach();
 
-      // Menghapus data category_event
-      $event->categories()->detach();
+      // Menghapus data wishlist
+      $event->wishlist()->detach();
 
 
       if (!$event->delete()) {
@@ -259,12 +268,12 @@ class EventsController extends Controller
           $event->users()->attach($user);
         }
         return response()->json([
-          'msg' => 'Deletion failed',
+          'msg' => 'Gagal menghapus event',
         ], 404);
       }
 
       $response = [
-          'msg' => 'Event deleted',
+          'msg' => 'Event berhasil dihapus',
           'create' => [
             'href' => 'api/v1/events',
             'method' => 'POST',

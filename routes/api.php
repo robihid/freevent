@@ -17,25 +17,33 @@ use Illuminate\Http\Request;
 //     return $request->user();
 // });
 
-Route::group(['prefix' => 'v1'], function() {
+Route::group(['prefix' => 'v1', 'middleware' => 'cors'], function() {
   Route::resource('/events', 'EventsController', [
     'except' => ['create', 'edit']
   ]);
 
-  Route::resource('/events/registration', 'RegistrationController', [
-    'only' => ['store', 'destroy']
+  Route::post('/events/{event_id}/registration', [
+    'uses' => 'RegistrationController@store'
   ]);
 
-  Route::resource('/events/save', 'SaveController', [
-    'only' => ['store', 'destroy']
+  Route::delete('/events/{event_id}/registration', [
+    'uses' => 'RegistrationController@destroy'
+  ]);
+
+  Route::post('/events/{event_id}/save', [
+    'uses' => 'SaveController@store'
+  ]);
+
+  Route::delete('/events/{event_id}/save', [
+    'uses' => 'SaveController@destroy'
   ]);
 
   Route::resource('/tickets', 'TicketsController', [
-    'only' => ['index', 'show']
+    'only' => ['index']
   ]);
 
   Route::resource('/wishlist', 'WishlistController', [
-    'only' => ['index', 'show']
+    'only' => ['index']
   ]);
 
   Route::post('/user/register', [
