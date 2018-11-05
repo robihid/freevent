@@ -17,7 +17,7 @@ use Illuminate\Http\Request;
 //     return $request->user();
 // });
 
-Route::group(['prefix' => 'v1', 'middleware' => 'cors'], function() {
+Route::group(['middleware' => 'cors'], function() {
   Route::resource('/events', 'EventsController', [
     'except' => ['create', 'edit']
   ]);
@@ -39,7 +39,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'cors'], function() {
   ]);
 
   Route::resource('/tickets', 'TicketsController', [
-    'only' => ['index']
+    'only' => ['index', 'show']
   ]);
 
   Route::resource('/wishlist', 'WishlistController', [
@@ -52,5 +52,11 @@ Route::group(['prefix' => 'v1', 'middleware' => 'cors'], function() {
 
   Route::post('/user/login', [
     'uses' => 'AuthController@login'
+  ]);
+
+  Route::get('/users', 'AuthController@index');
+
+  Route::resource('/categories', 'CategoriesController', [
+    'only' => ['index', 'store']
   ]);
 });

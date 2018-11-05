@@ -5,43 +5,57 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use JWTAuth;
+use App\Event;
 
-class TicketsController extends Controller
-{
-    public function __construct() {
-      $this->middleware('jwt.auth');
-    }
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index(Request $request)
-    {
-      $user = JWTAuth::toUser($request->header('token'));
+class TicketsController extends Controller {
+	public function __construct() {
+		$this->middleware('jwt.auth');
+	}
 
-      $event_ids = DB::table('tickets')->where('user_id', $user->id)->pluck('event_id');
+	public function index(Request $request) {
+		$user = JWTAuth::toUser($request->header('token'));
 
-      $events = DB::table('events')->whereIn('id', $event_ids)->get();
+		$event_ids = DB::table('tickets')->where('user_id', $user->id)->pluck('event_id');
 
-      foreach ($events as $event) {
-        $category_ids = DB::table('category_event')->where('event_id', $event->id)->pluck('category_id');
-        $category_names = [];
-        foreach ($category_ids as $id) {
-          $category_names[] = DB::table('categories')->where('id', $id)->value('name');
-        }
-        $event->categories = $category_names;
-        $event->view_event = [
-          'href' => 'api/v1/events/' . $event->id,
-          'method' => 'GET'
-        ];
-      }
+		$events = DB::table('events')->whereIn('id', $event_ids)->get();
 
-      $response = [
-        'msg' => 'Event yang anda ikuti',
-        'events' => $events
-      ];
+		foreach ($events as $event) {
+			$category_ids = DB::table('category_event')->where('event_id', $event->id)->pluck('category_id');
+			$category_names = [];
+			foreach ($category_ids as $id) {
+				$category_names[] = DB::table('categories')->where('id', $id)->value('name');
+			}
+			$event->categories = $category_names;
+		}
 
-      return response()->json($response, 200);
-    }
+		$response = [
+			'msg' => 'Event yang anda ikuti',
+			'events' => $events,
+		];
+
+		return response()->json($response, 200);
+	}
+
+	public function show(Request $request, $event_id) {
+		$user = JWTAuth::toUser($request->header('token'));
+		$event = Event::find($event_id);
+		$category_ids = DB::table('category_event')->where('event_id', $event->id)->pluck('category_id');
+		$category_names = [];
+		foreach ($category_ids as $id) {
+			$category_names[] = DB::table('categories')->where('id', $id)->value('name');
+		}
+		$event->categories = $category_names;
+
+		$ticket_id = DB::table('tickets')->where([
+			['event_id', '=', $event_id],
+			['user_id', '=', $user->id]
+		])->value('id');
+
+		$response = [
+			'msg' => 'Detail informasi tiket',
+			'ticket_id' => $ticket_id,
+			'event' => $event,
+		];
+		return response()->json($response, 200);
+	}
 }

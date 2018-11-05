@@ -4,9 +4,10 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Category extends Model
-{
-  public function events() {
-    return $this->belongsToMany(Event::class);
-  }
+class Category extends Model {
+	protected $fillable = ['name'];
+
+	public function events() {
+		return $this->belongsToMany(Event::class);
+	}
 }
