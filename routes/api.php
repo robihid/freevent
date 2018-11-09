@@ -17,7 +17,7 @@ use Illuminate\Http\Request;
 //     return $request->user();
 // });
 
-Route::group(['middleware' => 'cors'], function() {
+// Route::group(['middleware' => 'cors'], function() {
   Route::resource('/events', 'EventsController', [
     'except' => ['create', 'edit']
   ]);
@@ -59,4 +59,4 @@ Route::group(['middleware' => 'cors'], function() {
   Route::resource('/categories', 'CategoriesController', [
     'only' => ['index', 'store']
   ]);
-});
+// });
