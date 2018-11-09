@@ -8,7 +8,7 @@ use JWTAuth;
 
 class WishlistController extends Controller {
 	public function __construct() {
-		$this->middleware('jwt.auth');
+		$this->middleware('jwt.auth', ['except' => ['store']]);
 	}
 
 	public function index(Request $request) {
@@ -33,5 +33,35 @@ class WishlistController extends Controller {
 		];
 
 		return response()->json($response, 200);
+	}
+
+	public function store(Request $request) {
+		// Validasi request
+		$this->validate($request, [
+			'user_id' => 'required',
+			'event_id' => 'required'
+		]);
+
+		$user_id = $request->input('user_id');
+		$event_id = $request->input('event_id');
+
+		// Menyimpan wishlist (user_id, event_id) ke database
+		DB::table('wishlist')->insert(
+			['user_id' => $user_id, 'event_id' => $event_id]
+		);
+
+		// Mengambil wishlist dari database untuk ditampilkan sebagai response
+		$wishlist = DB::table('wishlist')->where([
+			['user_id', '=', $user_id],
+			['event_id', '=', $event_id]
+		])->get();
+
+		// Membuat array response
+		$response = [
+			'msg' => 'Wishlist berhasil disimpan',
+			'wishlist' => $wishlist
+		];
+
+		return response()->json($response, 201);
 	}
 }

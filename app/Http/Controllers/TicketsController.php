@@ -9,7 +9,7 @@ use App\Event;
 
 class TicketsController extends Controller {
 	public function __construct() {
-		$this->middleware('jwt.auth');
+		$this->middleware('jwt.auth', ['except' => ['store']]);
 	}
 
 	public function index(Request $request) {
@@ -57,5 +57,35 @@ class TicketsController extends Controller {
 			'event' => $event,
 		];
 		return response()->json($response, 200);
+	}
+
+	public function store(Request $request) {
+		// Validasi request
+		$this->validate($request, [
+			'user_id' => 'required',
+			'event_id' => 'required'
+		]);
+
+		$user_id = $request->input('user_id');
+		$event_id = $request->input('event_id');
+
+		// Menyimpan ticket (user_id, event_id) ke database
+		DB::table('tickets')->insert(
+			['user_id' => $user_id, 'event_id' => $event_id]
+		);
+
+		// Mengambil ticket dari database untuk ditampilkan sebagai response
+		$ticket = DB::table('tickets')->where([
+			['user_id', '=', $user_id],
+			['event_id', '=', $event_id]
+		])->get();
+
+		// Membuat array response
+		$response = [
+			'msg' => 'Tiket berhasil disimpan',
+			'ticket' => $ticket
+		];
+
+		return response()->json($response, 201);
 	}
 }

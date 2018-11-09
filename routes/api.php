@@ -39,11 +39,11 @@ Route::group(['middleware' => 'cors'], function() {
   ]);
 
   Route::resource('/tickets', 'TicketsController', [
-    'only' => ['index', 'show']
+    'only' => ['index', 'show', 'store']
   ]);
 
   Route::resource('/wishlist', 'WishlistController', [
-    'only' => ['index']
+    'only' => ['index', 'store']
   ]);
 
   Route::post('/user/register', [
