@@ -17,7 +17,7 @@ use Illuminate\Http\Request;
 //     return $request->user();
 // });
 
-Route::group(['middleware' => 'cors'], function() {
+Route::group(function() {
   Route::resource('/events', 'EventsController', [
     'except' => ['create', 'edit']
   ]);
