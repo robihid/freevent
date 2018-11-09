@@ -17,45 +17,46 @@ use Illuminate\Http\Request;
 //     return $request->user();
 // });
 
+Route::group(['middleware' => 'cors'], function() {
+  Route::resource('/events', 'EventsController', [
+    'except' => ['create', 'edit']
+  ]);
 
-Route::resource('/events', 'EventsController', [
-  'except' => ['create', 'edit']
-]);
+  Route::post('/events/{event_id}/registration', [
+    'uses' => 'RegistrationController@store'
+  ]);
 
-Route::post('/events/{event_id}/registration', [
-  'uses' => 'RegistrationController@store'
-]);
+  Route::delete('/events/{event_id}/registration', [
+    'uses' => 'RegistrationController@destroy'
+  ]);
 
-Route::delete('/events/{event_id}/registration', [
-  'uses' => 'RegistrationController@destroy'
-]);
+  Route::post('/events/{event_id}/save', [
+    'uses' => 'SaveController@store'
+  ]);
 
-Route::post('/events/{event_id}/save', [
-  'uses' => 'SaveController@store'
-]);
+  Route::delete('/events/{event_id}/save', [
+    'uses' => 'SaveController@destroy'
+  ]);
 
-Route::delete('/events/{event_id}/save', [
-  'uses' => 'SaveController@destroy'
-]);
+  Route::resource('/tickets', 'TicketsController', [
+    'only' => ['index', 'show', 'store']
+  ]);
 
-Route::resource('/tickets', 'TicketsController', [
-  'only' => ['index', 'show', 'store']
-]);
+  Route::resource('/wishlist', 'WishlistController', [
+    'only' => ['index', 'store']
+  ]);
 
-Route::resource('/wishlist', 'WishlistController', [
-  'only' => ['index', 'store']
-]);
+  Route::post('/user/register', [
+    'uses' => 'AuthController@register'
+  ]);
 
-Route::post('/user/register', [
-  'uses' => 'AuthController@register'
-]);
+  Route::post('/user/login', [
+    'uses' => 'AuthController@login'
+  ]);
 
-Route::post('/user/login', [
-  'uses' => 'AuthController@login'
-]);
+  Route::get('/users', 'AuthController@index');
 
-Route::get('/users', 'AuthController@index');
-
-Route::resource('/categories', 'CategoriesController', [
-  'only' => ['index', 'store']
-]);
+  Route::resource('/categories', 'CategoriesController', [
+    'only' => ['index', 'store']
+  ]);
+});
