@@ -13,16 +13,16 @@ class WishlistController extends Controller {
 
 	public function index(Request $request) {
 		// $user = JWTAuth::toUser($request->header('token'));
-		$user->id = $request->input('user_id');
+		$user_id = $request->input('user_id');
 
-		$event_ids = DB::table('wishlist')->where('user_id', $user->id)->pluck('event_id');
+		$event_ids = DB::table('wishlist')->where('user_id', $user_id)->pluck('event_id');
 
 		$events = DB::table('events')->whereIn('id', $event_ids)->get();
 
 		foreach ($events as $event) {
 			$wishlist_id = DB::table('wishlist')->where([
 				['event_id', '=', $event->id],
-				['user_id', '=', $user->id]
+				['user_id', '=', $user_id]
 			])->value('id');
 			$event->wishlist_id = $wishlist_id;
 			$category_ids = DB::table('category_event')->where('event_id', $event->id)->pluck('category_id');
