@@ -7,12 +7,13 @@ use Illuminate\Support\Facades\DB;
 use JWTAuth;
 
 class WishlistController extends Controller {
-	public function __construct() {
-		$this->middleware('jwt.auth', ['except' => ['store']]);
-	}
+	// public function __construct() {
+	// 	$this->middleware('jwt.auth', ['except' => ['store']]);
+	// }
 
 	public function index(Request $request) {
-		$user = JWTAuth::toUser($request->header('token'));
+		// $user = JWTAuth::toUser($request->header('token'));
+		$user->id = $request->input('user_id');
 
 		$event_ids = DB::table('wishlist')->where('user_id', $user->id)->pluck('event_id');
 
