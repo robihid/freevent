@@ -19,6 +19,11 @@ class WishlistController extends Controller {
 		$events = DB::table('events')->whereIn('id', $event_ids)->get();
 
 		foreach ($events as $event) {
+			$wishlist_id = DB::table('wishlist')->where([
+				['event_id', '=', $event->id],
+				['user_id', '=', $user->id]
+			])->value('id');
+			$event->wishlist_id = $wishlist_id;
 			$category_ids = DB::table('category_event')->where('event_id', $event->id)->pluck('category_id');
 			$category_names = [];
 			foreach ($category_ids as $id) {
@@ -47,7 +52,7 @@ class WishlistController extends Controller {
 
 		// Menyimpan wishlist (user_id, event_id) ke database
 		DB::table('wishlist')->insert(
-			['user_id' => $user_id, 'event_id' => $event_id]
+			['user_id' => $user_id, 'event_id' => $event_id, 'created_at' => date(), 'updatet_at' => date()]
 		);
 
 		// Mengambil wishlist dari database untuk ditampilkan sebagai response

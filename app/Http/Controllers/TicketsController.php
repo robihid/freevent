@@ -20,6 +20,11 @@ class TicketsController extends Controller {
 		$events = DB::table('events')->whereIn('id', $event_ids)->get();
 
 		foreach ($events as $event) {
+			$ticket_id = DB::table('tickets')->where([
+				['event_id', '=', $event->id],
+				['user_id', '=', $user->id]
+			])->value('id');
+			$event->ticket_id = $ticket_id;
 			$category_ids = DB::table('category_event')->where('event_id', $event->id)->pluck('category_id');
 			$category_names = [];
 			foreach ($category_ids as $id) {
