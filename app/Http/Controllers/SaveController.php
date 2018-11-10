@@ -9,12 +9,14 @@ use Illuminate\Support\Facades\DB;
 use JWTAuth;
 
 class SaveController extends Controller {
-	public function __construct() {
-		$this->middleware('jwt.auth');
-	}
+	// public function __construct() {
+	// 	$this->middleware('jwt.auth');
+	// }
 
 	public function store(Request $request, $event_id) {
-		$user = JWTAuth::toUser($request->header('token'));
+		// $user = JWTAuth::toUser($request->header('token'));			--AUTENTIKASI DIHAPUS SEMENTARA, UNTUK DEVELOPMENT
+		$user = User::find($request->input('user_id'));
+
 		$user_id = $user->id;
 
 		$event = Event::findOrFail($event_id);
@@ -43,7 +45,8 @@ class SaveController extends Controller {
 	}
 
 	public function destroy(Request $request, $event_id) {
-		$user = JWTAuth::toUser($request->header('token'));
+		// $user = JWTAuth::toUser($request->header('token'));			--AUTENTIKASI DIHAPUS SEMENTARA, UNTUK DEVELOPMENT
+		$user = User::find($request->input('user_id'));
 
 		$event = Event::findOrFail($event_id);
 		$row = DB::table('wishlist')->where([['event_id', $event_id], ['user_id', $user->id]])->delete();

@@ -6,11 +6,12 @@ use App\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use JWTAuth;
+use App\User;
 
 class EventsController extends Controller {
-	public function __construct() {
-		$this->middleware('jwt.auth', ['except' => ['index', 'show']]);
-	}
+	// public function __construct() {																	--AUTENTIKASI DIHAPUS SEMENTARA, UNTUK DEVELOPMENT
+	// 	$this->middleware('jwt.auth', ['except' => ['index', 'show']]);
+	// }
 
 	public function index() {
 		$events = Event::all();
@@ -33,7 +34,8 @@ class EventsController extends Controller {
 	}
 
 	public function store(Request $request) {
-		$user = JWTAuth::toUser($request->header('token'));
+		// $user = JWTAuth::toUser($request->header('token'));			--AUTENTIKASI DIHAPUS SEMENTARA, UNTUK DEVELOPMENT
+		$user = User::find($request->input('user_id'));
 
 		$this->validate($request, [
 			'title' => 'required',
@@ -107,7 +109,8 @@ class EventsController extends Controller {
 	}
 
 	public function update(Request $request, $id) {
-		$user = JWTAuth::toUser($request->header('token'));
+		// $user = JWTAuth::toUser($request->header('token'));			--AUTENTIKASI DIHAPUS SEMENTARA, UNTUK DEVELOPMENT
+		$user = User::find($request->input('user_id'));
 
 		$this->validate($request, [
 			'title' => 'required',
@@ -181,7 +184,8 @@ class EventsController extends Controller {
 	}
 
 	public function destroy(Request $request, $id) {
-		$user = JWTAuth::toUser($request->header('token'));
+		// $user = JWTAuth::toUser($request->header('token'));			--AUTENTIKASI DIHAPUS SEMENTARA, UNTUK DEVELOPMENT
+		$user = User::find($request->input('user_id'));
 
 		$organizer_id = $user->id;
 
