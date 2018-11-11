@@ -70,4 +70,9 @@ class WishlistController extends Controller {
 
 		return response()->json($response, 201);
 	}
+
+	// Menampilkan semua data pada tabel wishlist
+	public function getAll() {
+		return DB::table('wishlist')->get();
+	}
 }

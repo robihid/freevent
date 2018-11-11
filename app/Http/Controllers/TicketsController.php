@@ -94,4 +94,9 @@ class TicketsController extends Controller {
 
 		return response()->json($response, 201);
 	}
+
+	// Menampilkan semua data pada tabel tickets
+	public function getAll() {
+		return DB::table('tickets')->get();
+	}
 }

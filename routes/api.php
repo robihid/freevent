@@ -59,4 +59,8 @@ Route::group(['middleware' => 'cors'], function() {
   Route::resource('/categories', 'CategoriesController', [
     'only' => ['index', 'store']
   ]);
+
+  Route::get('/tickets/all', 'TicketsController@getAll');
+
+  Route::get('/wishlist/all', 'WishlistController@getAll');
 });
