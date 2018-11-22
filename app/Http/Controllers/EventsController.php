@@ -9,9 +9,9 @@ use JWTAuth;
 use App\User;
 
 class EventsController extends Controller {
-	// public function __construct() {																	--AUTENTIKASI DIHAPUS SEMENTARA, UNTUK DEVELOPMENT
-	// 	$this->middleware('jwt.auth', ['except' => ['index', 'show']]);
-	// }
+	public function __construct() {																	
+		$this->middleware('jwt.auth', ['except' => ['index', 'show']]);
+	}
 
 	public function index() {
 		$events = Event::all();
@@ -34,8 +34,8 @@ class EventsController extends Controller {
 	}
 
 	public function store(Request $request) {
-		// $user = JWTAuth::toUser($request->header('token'));			--AUTENTIKASI DIHAPUS SEMENTARA, UNTUK DEVELOPMENT
-		$user = User::find($request->input('user_id'));
+		$user = JWTAuth::toUser($request->input('token'));		
+		// $user = User::find($request->input('user_id'));
 
 		$this->validate($request, [
 			'title' => 'required',
@@ -45,8 +45,19 @@ class EventsController extends Controller {
 			'location' => 'required',
 			'start_time' => 'required',
 			'end_time' => 'required',
-			'image_url' => 'required',
+			'image' => 'image|required|max:1999',
 		]);
+
+		// Get filename with the extension
+		$filenameWithExt = $request->file('image')->getClientOriginalName();
+		// Get just filename
+		$filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+		// Get just ext
+		$extension = $request->file('image')->getClientOriginalExtension();
+		// Filename to store
+		$fileNameToStore = $filename . '_' . time() . '.' . $extension;
+		// Upload Image
+		$path = $request->file('image')->storeAs('public/image', $fileNameToStore);
 
 		$title = $request->input('title');
 		$categories = $request->input('categories');
@@ -56,7 +67,7 @@ class EventsController extends Controller {
 		$location = $request->input('location');
 		$start_time = $request->input('start_time');
 		$end_time = $request->input('end_time');
-		$image_url = $request->input('image_url');
+		$image_url = $fileNameToStore;
 		$organizer_id = $user->id;
 
 		$event = new Event([
@@ -73,10 +84,10 @@ class EventsController extends Controller {
 
 		if ($event->save()) {
 			if ($categories) {
-				foreach ($categories as $name) {
-					$category_id = DB::table('categories')->where('name', $name)->value('id');
+				// foreach ($categories as $name) {
+					$category_id = DB::table('categories')->where('name', $categories)->value('id');
 					$event->categories()->attach($category_id);
-				}
+				// }
 			}
 			$event->categories = $categories;
 			$response = [
@@ -109,7 +120,7 @@ class EventsController extends Controller {
 	}
 
 	public function update(Request $request, $id) {
-		// $user = JWTAuth::toUser($request->header('token'));			--AUTENTIKASI DIHAPUS SEMENTARA, UNTUK DEVELOPMENT
+		// $user = JWTAuth::toUser($request->input('token'));			--AUTENTIKASI DIHAPUS SEMENTARA, UNTUK DEVELOPMENT
 		$user = User::find($request->input('user_id'));
 
 		$this->validate($request, [
@@ -184,8 +195,8 @@ class EventsController extends Controller {
 	}
 
 	public function destroy(Request $request, $id) {
-		// $user = JWTAuth::toUser($request->header('token'));			--AUTENTIKASI DIHAPUS SEMENTARA, UNTUK DEVELOPMENT
-		$user = User::find($request->input('user_id'));
+		$user = JWTAuth::toUser($request->input('token'));			
+		// $user = User::find($request->input('user_id'));
 
 		$organizer_id = $user->id;
 

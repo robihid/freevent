@@ -13,17 +13,17 @@ class TicketsController extends Controller {
 	// }
 
 	public function index(Request $request) {
-		// $user = JWTAuth::toUser($request->header('token'));
-		$user_id = $request->input('user_id');
+		$user = JWTAuth::toUser($request->input('token'));
+		// $user_id = $request->input('user_id');
 
-		$event_ids = DB::table('tickets')->where('user_id', $user_id)->pluck('event_id');
+		$event_ids = DB::table('tickets')->where('user_id', $user->id)->pluck('event_id');
 
 		$events = DB::table('events')->whereIn('id', $event_ids)->get();
 
 		foreach ($events as $event) {
 			$ticket_id = DB::table('tickets')->where([
 				['event_id', '=', $event->id],
-				['user_id', '=', $user_id]
+				['user_id', '=', $user->id]
 			])->value('id');
 			$event->ticket_id = $ticket_id;
 			$category_ids = DB::table('category_event')->where('event_id', $event->id)->pluck('category_id');
@@ -43,7 +43,7 @@ class TicketsController extends Controller {
 	}
 
 	public function show(Request $request, $event_id) {
-		$user = JWTAuth::toUser($request->header('token'));
+		$user = JWTAuth::toUser($request->input('token'));
 		$event = Event::find($event_id);
 		$category_ids = DB::table('category_event')->where('event_id', $event->id)->pluck('category_id');
 		$category_names = [];
@@ -66,18 +66,19 @@ class TicketsController extends Controller {
 	}
 
 	public function store(Request $request) {
+		$user = JWTAuth::toUser($request->input('token'));
+
 		// Validasi request
 		$this->validate($request, [
-			'user_id' => 'required',
 			'event_id' => 'required'
 		]);
 
-		$user_id = $request->input('user_id');
+		$user_id = $user->id;
 		$event_id = $request->input('event_id');
 
 		// Menyimpan ticket (user_id, event_id) ke database
 		DB::table('tickets')->insert(
-			['user_id' => $user_id, 'event_id' => $event_id]
+			['user_id' => $user_id, 'event_id' => $event_id, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')]
 		);
 
 		// Mengambil ticket dari database untuk ditampilkan sebagai response

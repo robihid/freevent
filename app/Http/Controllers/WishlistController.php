@@ -7,22 +7,22 @@ use Illuminate\Support\Facades\DB;
 use JWTAuth;
 
 class WishlistController extends Controller {
-	// public function __construct() {
-	// 	$this->middleware('jwt.auth', ['except' => ['store']]);
-	// }
+	public function __construct() {
+		$this->middleware('jwt.auth', ['except' => ['store']]);
+	}
 
 	public function index(Request $request) {
-		// $user = JWTAuth::toUser($request->header('token'));
-		$user_id = $request->input('user_id');
+		$user = JWTAuth::toUser($request->input('token'));
+		// $user_id = $request->input('user_id');
 
-		$event_ids = DB::table('wishlist')->where('user_id', $user_id)->pluck('event_id');
+		$event_ids = DB::table('wishlist')->where('user_id', $user->id)->pluck('event_id');
 
 		$events = DB::table('events')->whereIn('id', $event_ids)->get();
 
 		foreach ($events as $event) {
 			$wishlist_id = DB::table('wishlist')->where([
 				['event_id', '=', $event->id],
-				['user_id', '=', $user_id]
+				['user_id', '=', $user->id]
 			])->value('id');
 			$event->wishlist_id = $wishlist_id;
 			$category_ids = DB::table('category_event')->where('event_id', $event->id)->pluck('category_id');
@@ -42,18 +42,19 @@ class WishlistController extends Controller {
 	}
 
 	public function store(Request $request) {
+		$user = JWTAuth::toUser($request->input('token'));
+
 		// Validasi request
 		$this->validate($request, [
-			'user_id' => 'required',
 			'event_id' => 'required'
 		]);
 
-		$user_id = $request->input('user_id');
+		$user_id = $user->id;
 		$event_id = $request->input('event_id');
 
 		// Menyimpan wishlist (user_id, event_id) ke database
 		DB::table('wishlist')->insert(
-			['user_id' => $user_id, 'event_id' => $event_id, 'created_at' => date(), 'updatet_at' => date()]
+			['user_id' => $user_id, 'event_id' => $event_id, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')]
 		);
 
 		// Mengambil wishlist dari database untuk ditampilkan sebagai response
