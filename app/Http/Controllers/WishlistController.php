@@ -72,8 +72,24 @@ class WishlistController extends Controller {
 		return response()->json($response, 201);
 	}
 
-	// Menampilkan semua data pada tabel wishlist
-	public function getAll() {
-		return DB::table('wishlist')->get();
+	public function destroy(Request $request, $event_id) {
+		$user = JWTAuth::toUser($request->input('token'));
+		// $user = User::find($request->input('user_id'));
+
+		$event = Event::findOrFail($event_id);
+		$row = DB::table('wishlist')->where([['event_id', $event_id], ['user_id', $user->id]])->delete();
+
+		$response = [
+			'msg' => 'Event berhasil dihapus dari wishlist',
+			'event' => $event,
+			'user' => $user,
+		];
+
+		return response()->json($response, 200);
 	}
+
+	// Menampilkan semua data pada tabel wishlist
+	// public function getAll() {
+	// 	return DB::table('wishlist')->get();
+	// }
 }

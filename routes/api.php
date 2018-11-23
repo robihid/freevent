@@ -49,7 +49,7 @@ Route::group(['middleware' => 'cors'], function() {
   ]);
 
   Route::resource('/wishlist', 'WishlistController', [
-    'only' => ['index', 'store']
+    'only' => ['index', 'store', 'destroy']
   ]);
 
   Route::post('/user/register', [

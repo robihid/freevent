@@ -8,9 +8,9 @@ use JWTAuth;
 use App\Event;
 
 class TicketsController extends Controller {
-	// public function __construct() {
-	// 	$this->middleware('jwt.auth', ['except' => ['store']]);
-	// }
+	public function __construct() {
+		$this->middleware('jwt.auth');
+	}
 
 	public function index(Request $request) {
 		$user = JWTAuth::toUser($request->input('token'));
