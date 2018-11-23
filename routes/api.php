@@ -22,27 +22,27 @@ Route::group(['middleware' => 'cors'], function() {
     'except' => ['create', 'edit']
   ]);
 
-  Route::post('/events/{event_id}/registration', [
-    'uses' => 'RegistrationController@store'
-  ]);
+  // Route::post('/events/{event_id}/registration', [
+  //   'uses' => 'RegistrationController@store'
+  // ]);
 
-  Route::delete('/events/{event_id}/registration', [
-    'uses' => 'RegistrationController@destroy'
-  ]);
+  // Route::delete('/events/{event_id}/registration', [
+  //   'uses' => 'RegistrationController@destroy'
+  // ]);
 
-  Route::post('/events/{event_id}/save', [
-    'uses' => 'SaveController@store'
-  ]);
+  // Route::post('/events/{event_id}/save', [
+  //   'uses' => 'SaveController@store'
+  // ]);
 
-  Route::delete('/events/{event_id}/save', [
-    'uses' => 'SaveController@destroy'
-  ]);
+  // Route::delete('/events/{event_id}/save', [
+  //   'uses' => 'SaveController@destroy'
+  // ]);
 
-  // Sementara
-  Route::get('/tickets/all', 'TicketsController@getAll');
+  // // Sementara
+  // Route::get('/tickets/all', 'TicketsController@getAll');
 
-  // Sementara
-  Route::get('/wishlist/all', 'WishlistController@getAll');
+  // // Sementara
+  // Route::get('/wishlist/all', 'WishlistController@getAll');
 
   Route::resource('/tickets', 'TicketsController', [
     'only' => ['index', 'show', 'store']
