@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use JWTAuth;
+use App\Event;
 
 class WishlistController extends Controller {
 	public function __construct() {
-		$this->middleware('jwt.auth', ['except' => ['store']]);
+		$this->middleware('jwt.auth', ['except']);
 	}
 
 	public function index(Request $request) {
