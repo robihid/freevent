@@ -14,7 +14,6 @@ class TicketsController extends Controller {
 
 	public function index(Request $request) {
 		$user = JWTAuth::toUser($request->input('token'));
-		// $user_id = $request->input('user_id');
 
 		$event_ids = DB::table('tickets')->where('user_id', $user->id)->pluck('event_id');
 
@@ -94,10 +93,5 @@ class TicketsController extends Controller {
 		];
 
 		return response()->json($response, 201);
-	}
-
-	// Menampilkan semua data pada tabel tickets
-	public function getAll() {
-		return DB::table('tickets')->get();
 	}
 }

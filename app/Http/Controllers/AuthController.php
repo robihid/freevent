@@ -6,7 +6,7 @@ use App\User;
 use Illuminate\Http\Request;
 use JWTAuth;
 
-// use JWTAuthException;
+use JWTAuthException;
 
 class AuthController extends Controller {
 	public function register(Request $request) {
@@ -110,10 +110,5 @@ class AuthController extends Controller {
 		];
 
 		return response()->json($response, 404);
-	}
-
-	public function index() {
-		$users = User::all();
-		return $users;
 	}
 }

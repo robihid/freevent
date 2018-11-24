@@ -14,7 +14,6 @@ class WishlistController extends Controller {
 
 	public function index(Request $request) {
 		$user = JWTAuth::toUser($request->input('token'));
-		// $user_id = $request->input('user_id');
 
 		$event_ids = DB::table('wishlist')->where('user_id', $user->id)->pluck('event_id');
 
@@ -75,7 +74,6 @@ class WishlistController extends Controller {
 
 	public function destroy(Request $request, $event_id) {
 		$user = JWTAuth::toUser($request->input('token'));
-		// $user = User::find($request->input('user_id'));
 
 		$event = Event::findOrFail($event_id);
 		$row = DB::table('wishlist')->where([['event_id', $event_id], ['user_id', $user->id]])->delete();
@@ -88,9 +86,4 @@ class WishlistController extends Controller {
 
 		return response()->json($response, 200);
 	}
-
-	// Menampilkan semua data pada tabel wishlist
-	// public function getAll() {
-	// 	return DB::table('wishlist')->get();
-	// }
 }
